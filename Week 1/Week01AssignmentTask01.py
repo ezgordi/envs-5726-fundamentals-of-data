@@ -1,1 +1,1 @@
-print("I want to use coding to create more sustainable supply chains")
+print("I want to use coding to create more sustainable supply chains in the fashion industry")
