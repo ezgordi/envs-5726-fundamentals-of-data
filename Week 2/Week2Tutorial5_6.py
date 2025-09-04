@@ -22,4 +22,9 @@ weather_list = weather_string.split('! ')
 
 data_list = ['Storms', 'Floods', 'Mass Movement', 'Earthquakes', 'Droughts']
 my_slice = data_list[1:3]
-print(my_slice)
+#print(my_slice)
+
+floods_index = data_list.index('Floods')
+print(floods_index)
+
+address = 'Hayden Hall, 240 S 33rd St, Philadelphia, PA, 19104'
