@@ -12,7 +12,7 @@ class PreySample:
         return self.full_species_name.split(' (')[0]
 
     def get_scientific_name(self):
-        return self.full_species_name.split(' (')[1].replace( '(Phoca Vitulina)','Phoca Vitulina')
+        return self.full_species_name.split(' (')[1].replace( 'Phoca Vitulina)','Phoca Vitulina' )
 
     def get_average_delta13c(self):
         return statistics.mean(self.delta13c_list)
@@ -23,6 +23,9 @@ class PreySample:
     def get_sample_date(self):
         return datetime.datetime.strptime(self.sample_date_utc, '%Y-%m-%dT%H:%M:%SZ')
 
+    def get_discrimination_factor (self, predator_delta13c : float):
+        prey_average = self.get_average_delta13c
+        return predator_delta13c - self.get_average_delta13c()
 
 
 
@@ -49,4 +52,5 @@ sample2 = PreySample (
     sample_date_utc = '2020-11-17T05:00:02Z',
 )
 
+print (sample2.get_discrimination_factor(predator_delta13c=-15.5))
 
