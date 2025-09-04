@@ -20,8 +20,9 @@ class PreySample:
     def get_tissue_count(self):
         return len(self.tissue_description.split(', '))
 
-    def get_sample_date(self):
-        return datetime.datetime.strptime(self.sample_date_utc, '%Y-%m-%d %H:%M:%S').replace('2020-11-16T04:25:032', '2020-11-16:04:25:032')
+
+    def get_discrimination_factor(self):
+
 
 
 
@@ -49,5 +50,12 @@ print(f'the tissue count is {tissue_count}')
 print(f'the sample date is {sample_date}')
 
 
+
+sample2 = PreySample (
+    full_species_name = 'Pacific pomfret (Brama japonica)',
+    delta13c_list = [-16.1, -17.8, -19.6, -19.1, -18.0],
+    tissue_description = 'Whole animal',
+    sample_date_utc = '2020-11-17T05:00:02Z',
+)
 
 
