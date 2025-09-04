@@ -12,7 +12,7 @@ class PreySample:
         return self.full_species_name.split(' (')[0]
 
     def get_scientific_name(self):
-        return self.full_species_name.split(' (')[1].replace( '(Phoca Vitulina)', 'Phoca Vitulina')
+        return self.full_species_name.split(' (')[1].replace( '(Phoca Vitulina)','Phoca Vitulina')
 
     def get_average_delta13c(self):
         return statistics.mean(self.delta13c_list)
@@ -20,11 +20,8 @@ class PreySample:
     def get_tissue_count(self):
         return len(self.tissue_description.split(', '))
 
-
-    def get_discrimination_factor(self):
-
-
-
+    def get_sample_date(self):
+        return datetime.datetime.strptime(self.sample_date_utc, '%Y-%m-%dT%H:%M:%SZ')
 
 
 
@@ -34,21 +31,15 @@ sample1 = PreySample(
     full_species_name = 'Harbor Seal (Phoca Vitulina)',
     delta13c_list = [-12.4, -11.3, -10.6, -13.5, -15.8],
     tissue_description = 'Bone collagen, Bone collagen, Muscle, Skin',
-    sample_date_utc = '2020-11-16T04:25:032',
+    sample_date_utc = '2020-11-16T04:25:03Z',
 )
 
-common_name_species = sample1.get_common_name()
-scientific_name_species = sample1.get_scientific_name()
-average_delta13c = sample1.get_average_delta13c()
-tissue_count = sample1.get_tissue_count()
-sample_date = sample1.get_sample_date()
 
-print(f'the common name is {common_name_species}')
-print(f'the scientific name is {scientific_name_species}')
-print(f'the average is {average_delta13c}')
-print(f'the tissue count is {tissue_count}')
-print(f'the sample date is {sample_date}')
-
+print (sample1.get_common_name())
+print(sample1.get_scientific_name())
+print(sample1.get_average_delta13c())
+print(sample1.get_tissue_count())
+print(sample1.get_sample_date())
 
 
 sample2 = PreySample (
