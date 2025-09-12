@@ -31,24 +31,21 @@ def is_population_disabled ( disabled: float, total_population : float) -> bool:
 
 
 def is_gp_religious_or_academic (gp):
-    if 'Mosque' in gp:
-        return True
-    elif 'Church' in gp:
-        return True
-    elif 'School' in gp:
-        return True
-    elif 'Institute' in gp:
-        return True
-    elif 'Education' in gp:
-        return True
-    elif 'Faculty' in gp:
+
+    key_words = { 'Mosque, School', 'Institute', 'Education', 'Faculty', 'Church'} #key words set
+
+    gp_list = set(gp.split( ))
+
+    intersection_key_words_gp = gp_list.intersection(key_words)
+
+    if intersection_key_words_gp:
         return True
     else:
         return False
 
-#print(is_gp_religious_or_academic('Faculty Of Earth Sciences and Mining'))
-#print(is_gp_religious_or_academic('Almorada Church'))
-#print(is_gp_religious_or_academic('Health Insulation Building'))
+print(is_gp_religious_or_academic('Faculty Of Earth Sciences and Mining'))
+print(is_gp_religious_or_academic('Almorada Church'))
+print(is_gp_religious_or_academic('Health Insulation Building'))
 
 
 
@@ -73,8 +70,8 @@ def get_sanitation_priority (ratio,disabled,total_population,gp):
 
 
 
-print(get_sanitation_priority(ratio= '1t/49p',disabled = 52, total_population = 392, gp = 'Faculty-Students Dwelling'))
-print(get_sanitation_priority(ratio='1t/29p', disabled = 0, total_population = 178, gp = 'Mohamad Ali Abbas Secondary School For Girls'))
-print(get_sanitation_priority(ratio = '1t/17p', disabled = 0, total_population= 52, gp = 'Alsalam Old Mosque'))
-print(get_sanitation_priority(ratio= '1t/16p', disabled = 0, total_population= 12, gp = 'Nile Club'))
-print(get_sanitation_priority(ratio= '1t/395p', disabled = 0, total_population= 1580, gp = 'Town Park (Almuntazah)'))
+#print(get_sanitation_priority(ratio= '1t/49p',disabled = 52, total_population = 392, gp = 'Faculty-Students Dwelling'))
+#print(get_sanitation_priority(ratio='1t/29p', disabled = 0, total_population = 178, gp = 'Mohamad Ali Abbas Secondary School For Girls'))
+#print(get_sanitation_priority(ratio = '1t/17p', disabled = 0, total_population= 52, gp = 'Alsalam Old Mosque'))
+#print(get_sanitation_priority(ratio= '1t/16p', disabled = 0, total_population= 12, gp = 'Nile Club'))
+#print(get_sanitation_priority(ratio= '1t/395p', disabled = 0, total_population= 1580, gp = 'Town Park (Almuntazah)'))
