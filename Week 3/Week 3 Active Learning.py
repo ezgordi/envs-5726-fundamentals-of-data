@@ -53,23 +53,28 @@ def is_gp_religious_or_academic (gp):
 
 
 def get_sanitation_priority (ratio,disabled,total_population,gp):
-    ratio = is_min_ratio_toilets_to_people_met(ratio)
-    disabled = is_population_disabled (disabled, total_population)
-    gp = is_gp_religious_or_academic (gp)
+    is_ratio_met = is_min_ratio_toilets_to_people_met(ratio)
+    is_disabled = is_population_disabled (disabled, total_population)
+    is_gp = is_gp_religious_or_academic (gp)
 
+    #print(is_ratio_met)
+    #print(is_disabled)
+    #print(is_gp)
 
-
-    if not ratio >= 1/20 and is_population_disabled (disabled, total_population) <= 0.1:
+    if not is_ratio_met and is_disabled and is_gp:
         return 'High Priority'
 
-    elif ratio >=1/20 and is_population_disabled (disabled, total_population) >= 0.1:
+    elif is_ratio_met and not is_disabled and not is_gp:
         return 'Low Priority'
+
     else:
-        return 'Bad'
+        return 'Medium Priority'
+
 
 
 
 print(get_sanitation_priority(ratio= '1t/49p',disabled = 52, total_population = 392, gp = 'Faculty-Students Dwelling'))
 print(get_sanitation_priority(ratio='1t/29p', disabled = 0, total_population = 178, gp = 'Mohamad Ali Abbas Secondary School For Girls'))
-
-
+print(get_sanitation_priority(ratio = '1t/17p', disabled = 0, total_population= 52, gp = 'Alsalam Old Mosque'))
+print(get_sanitation_priority(ratio= '1t/16p', disabled = 0, total_population= 12, gp = 'Nile Club'))
+print(get_sanitation_priority(ratio= '1t/395p', disabled = 0, total_population= 1580, gp = 'Town Park (Almuntazah)'))
