@@ -30,15 +30,15 @@ def is_population_disabled ( disabled: float, total_population : float) -> bool:
 #print(is_population_disabled (disabled=52, total_population=392))
 
 
-def is_gp_religious_or_academic (gp):
+def is_gp_religious_or_academic (gp): #if you have a parameter, whatever you put into the print is going into the parameter
 
     key_words = { 'Mosque, School', 'Institute', 'Education', 'Faculty', 'Church'} #key words set
 
-    gp_list = set(gp.split( ))
+    gp_list = set(gp.split(' '))
 
     intersection_key_words_gp = gp_list.intersection(key_words)
 
-    if intersection_key_words_gp:
+    if intersection_key_words_gp: #we're saying 'if object exists', can say if len(intersection_key_words_gp) > 0
         return True
     else:
         return False
