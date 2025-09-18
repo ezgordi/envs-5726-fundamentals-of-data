@@ -1,0 +1,7 @@
+dna_list = ['CATGCG', 'TAG', 'TGGTCAAT', 'GGTTA']
+dna_length_list = []
+
+for dna_sequence in dna_list:
+   dna_length_list.append(len(dna_sequence))
+
+print(dna_length_list)
