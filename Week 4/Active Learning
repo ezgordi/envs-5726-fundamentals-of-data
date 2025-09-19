@@ -1,0 +1,44 @@
+from pathlib import Path
+import csv
+import os
+from datetime import datetime
+
+my_folder = Path('/Users/evelyngordi/Downloads/SEC_EDGAR_10K')
+headers = ['company name', 'year', 'count sustainability, count AI']
+table = []
+
+
+for my_file in my_folder.glob('*'): #allows us to iterate every file inside of a folder 
+
+    name_split = my_file.name.split('-')[0]
+    
+    replace_company_name = name_split.replace('amzn', 'amazon').replace('msft', 'microsoft').replace('goog' , 'google').replace('nvda', 'nvidia')
+    #replaced shorthands for full name, removed everything else
+    
+    date_string = my_file.name.split('-')[1].split('.')[0].split('_')[-1] #pulling the date only
+    my_dates = datetime.strptime(date_string, '%Y%m%d') #converted date from string into date time
+    year = my_dates.year
+
+    with open(my_file, 'r', encoding = 'cp1252') as file:
+        content= file.read()
+        sustainability_counter = content.lower().count('sustainability') #opens each file and counts # of instances 'sustainablity'
+        ai_counter = content.lower().count('artificial intelligence')
+
+
+
+    table.append([replace_company_name, year, sustainability_counter, ai_counter])
+    
+print(headers)
+for row in sorted(table)[:10]:
+    print(row)
+    
+
+
+    
+
+    #print(company_name)
+
+
+    
+
+
