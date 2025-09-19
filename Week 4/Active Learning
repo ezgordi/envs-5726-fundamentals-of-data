@@ -2,11 +2,13 @@ from pathlib import Path
 import csv
 import os
 from datetime import datetime
+import statistics
 
 my_folder = Path('/Users/evelyngordi/Downloads/SEC_EDGAR_10K')
-headers = ['company name', 'year', 'count sustainability, count AI']
+headers_in_table = ['company name', 'year', 'Count Sustainability', 'Count AI']
 table = []
 
+#task one
 
 for my_file in my_folder.glob('*'): #allows us to iterate every file inside of a folder 
 
@@ -27,16 +29,47 @@ for my_file in my_folder.glob('*'): #allows us to iterate every file inside of a
 
 
     table.append([replace_company_name, year, sustainability_counter, ai_counter])
-    
-print(headers)
+
+print(headers_in_table)
 for row in sorted(table)[:10]:
-    print(row)
+   print(row)
+    
+  
+#task two
+
+def get_average_by_company ( headers, table, column_name_to_average, company_name ): #defined a function w/ 4 inputs
+
+    find_company_column = headers.index('company name') #we used index to identify the column that has our company names 
+    find_target_column = headers.index(column_name_to_average) #specifying the column name that we want to average, which we define later in the code
+
+    values_specific_columns = [float(row[find_target_column]) for row in table if row[find_company_column] == company_name] 
+    return statistics.mean(values_specific_columns)
+
+    """
+    find the target column (count sust), go to the row and IF that row = company name, calculate include the values in mean calculation
+    """
+        
+for company_name in ['nvidia', 'microsoft', 'google', 'amazon']: #for loop that has the list of the company names
+    for column_name_to_average in ['Count Sustainability' , 'Count AI',]: #where we defined the specific column name that we want to average
+        column_average = get_average_by_company(headers=headers_in_table, #running our function and define our inputs above
+                                                table = table,
+                                                column_name_to_average= column_name_to_average,
+                                                company_name=company_name)
+            
+        print( f' The average {column_name_to_average} for {company_name} is {column_average}') #
+
+
+
+
+
+    
     
 
 
+        
+            
     
 
-    #print(company_name)
 
 
     
