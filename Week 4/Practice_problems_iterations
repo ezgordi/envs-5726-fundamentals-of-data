@@ -29,15 +29,18 @@ for my_file in itertools.chain.from_iterable(my_folder.glob(p) for p in file_pat
         esg_search= 'esg' in esg_lowercase
 
         keywords_table= []
-        words = content.split(' ')
-        words_length = len(words) in content >= 10 # i need to make a for loop 
-        keywords_table.append(words)
+        individual_words = content.split(' ')
+        for word in individual_words:
+            if len(word)>= 15:
+                keywords_table.append(word)
 
-        
-    table.append([replace_company_name, year, risk_counter, esg_search, keywords_table])
+        number_of_key_words = len(keywords_table)
+
+            
+    table.append([replace_company_name, year, risk_counter, esg_search, number_of_key_words])
     
 print(headers_in_table)
-for row in sorted(table)[:2]:
+for row in sorted(table)[:20]:
     print(row)
 
         
