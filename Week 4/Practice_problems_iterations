@@ -1,0 +1,43 @@
+from pathlib import Path
+import csv
+import os
+from datetime import datetime
+import statistics
+import itertools
+
+my_folder = Path('/Users/evelyngordi/Downloads/SEC_EDGAR_10K')
+headers_in_table = ['company name', 'year', 'risk count', 'contains_esg', 'unique_keywords']
+table = []
+
+file_patterns = ['*.html', '*.htm']
+
+for my_file in itertools.chain.from_iterable(my_folder.glob(p) for p in file_patterns):
+
+    name_split = my_file.name.split('-')[0]
+    
+    replace_company_name = name_split.replace('amzn', 'amazon').replace('msft', 'microsoft').replace('goog' , 'google').replace('nvda', 'nvidia')
+
+    date_string = my_file.name.split('-')[1].split('.')[0].split('_')[-1] #pulling the date only
+    my_dates = datetime.strptime(date_string, '%Y%m%d') #converted date from string into date time
+    year = my_dates.year
+
+    with open(my_file, 'r', encoding = 'cp1252') as file:
+        content= file.read()
+        risk_counter = content.lower().count('risk')
+        esg_lowercase= content.lower()
+        
+        esg_search= 'esg' in esg_lowercase
+
+        keywords_table= []
+        words = content.split(' ')
+        words_length = len(words) in content >= 10 # i need to make a for loop 
+        keywords_table.append(words)
+
+        
+    table.append([replace_company_name, year, risk_counter, esg_search, keywords_table])
+    
+print(headers_in_table)
+for row in sorted(table)[:2]:
+    print(row)
+
+        
