@@ -1,0 +1,53 @@
+from pathlib import Path
+import csv
+
+
+csv_path = Path('/Users/evelyngordi/Downloads/FPC_PHS_Trees_By_Mature_Height (1).csv')
+
+genus_by_heights_dict = {} #our goal for this dictionary is where {Genus: list of heights of all trees in that genus}
+
+with open(csv_path, 'r', encoding = 'cp1252') as csv_file:
+    reader = csv.reader(csv_file)
+    tree_headers = next(reader)
+    for row in reader:
+        genus, species, height_ft = row
+
+        if genus not in genus_by_heights_dict:
+            genus_by_heights_dict[genus] = [int(height_ft)] #if the genus is not in the dictionary, it adds it the key and assigns it to a heights value
+        else:
+            genus_by_heights_dict[genus].append(int(height_ft)) #if the genus is in the dictionary, it appends(adds) the next height value to the same key
+
+#print (genus_by_heights_dict['Cercis'])
+
+genus_by_species_count = {}
+for genus in genus_by_heights_dict: #iterate each genus in the origial genus_by_heights_dict
+    genus_by_species_count[genus] = len(genus_by_heights_dict[genus]) #store the number of heights as the value for the key 'genus'
+
+#print (genus_by_species_count)
+
+import statistics
+genus_by_mean_height_dict = {genus: statistics.mean(genus_by_heights_dict[genus])
+                             for genus in genus_by_heights_dict}
+                            #more consolidated approach to say: create a new dictionary that has the key genus paired with the mean of the heights
+                            #for each genus. for = iterating across the original dictionary
+
+
+
+#print (genus_by_mean_height_dict)
+
+summary_table_headers = ['Genus,', 'Species Count', 'Min Height (Ft)', 'Max Height (Ft)', 'Mean Height (Ft)']
+summary_table = []
+
+for genus in genus_by_heights_dict: #iterate across the dictionary to get each genus and their corresponding list of heights, which we have in the dictionary already
+    heights_list = genus_by_heights_dict[genus]
+
+    species_count = len(heights_list)
+    min_height = min(heights_list)
+    max_height = max(heights_list)
+    mean_height = statistics.mean(heights_list)
+
+    summary_table.append([genus, species_count, min_height, max_height, mean_height])
+
+with open(Path('/Users/evelyngordi/Downloads/put_data_here.csv'), 'w', newline='', encoding='cp1252') as f:
+    writer = csv.writer(f)
+    writer.writerows([summary_table_headers] + summary_table)
