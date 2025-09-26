@@ -9,9 +9,7 @@ my_folder = Path('/Users/evelyngordi/Downloads/SEC_EDGAR_10K')
 headers_in_table = ['company name', 'year', 'Count Sustainability', 'Count AI']
 table = []
 
-file_patterns = ['*.html', '*.htm']
-
-for my_file in itertools.chain.from_iterable(my_folder.glob(p) for p in file_patterns): #allows us to iterate every file inside of a folder #-a shows you hidden files
+for my_file in my_folder.glob('*.htm*'): #allows us to iterate every file inside of a folder #-a shows you hidden files
 
     name_split = my_file.name.split('-')[0]
     
@@ -28,10 +26,10 @@ for my_file in itertools.chain.from_iterable(my_folder.glob(p) for p in file_pat
         ai_counter = content.lower().count('artificial intelligence')
 
 
-    table.append([replace_company_name, year, sustainability_counter, ai_counter])
+    table.append([replace_company_name, year, sustainability_counter, ai_counter]) #appending row
 
 print(headers_in_table)
-for row in sorted(table)[:10]:
+for row in sorted(table)[:50]:
    print(row)
     
 
@@ -39,16 +37,20 @@ for row in sorted(table)[:10]:
 
 def get_average_by_company ( headers, table, column_name_to_average, company_name ): #defined a function w/ 4 inputs
 
-    find_company_column = headers.index('company name') #we used index to identify the column that has our company names 
-    find_target_column = headers.index(column_name_to_average) #specifying the column name that we want to average, which we define later in the code
+    find_company_column = headers.index('company name') #index to identify the column that has our company names, [0]
 
-    values_specific_columns = [float(row[find_target_column]) for row in table if row[find_company_column] == company_name] 
-    return statistics.mean(values_specific_columns)
+    find_target_column = headers.index(column_name_to_average)
+    
+    values_to_average_for_each_company = []
 
-    """
-    find the target column (count sust), go to the row and IF that row = company name, calculate include the values in mean calculation
-    """
-        
+    for row in table: 
+    
+        if row[find_company_column] == company_name:
+            values_to_average_for_each_company.append(float(row[find_target_column]))
+
+    return statistics.mean(values_to_average_for_each_company)
+
+
 for company_name in ['nvidia', 'microsoft', 'google', 'amazon']: #for loop that has the list of the company names
     for column_name_to_average in ['Count Sustainability' , 'Count AI',]: #where we defined the specific column name that we want to average
         column_average = get_average_by_company(headers=headers_in_table, #running our function and define our inputs above
@@ -60,6 +62,7 @@ for company_name in ['nvidia', 'microsoft', 'google', 'amazon']: #for loop that 
 
 
 #task 3
+
 
 amazon_metrics = []
 google_metrics = []
@@ -77,9 +80,9 @@ for row in table:
         microsoft_metrics.append(row)
 
 print (amazon_metrics)
-print (google_metrics)
-print (nvidia_metrics)
-print (microsoft_metrics)
+#print (google_metrics)
+#print (nvidia_metrics)
+#print (microsoft_metrics)
 
 with open(Path('/Users/evelyngordi/Downloads/SEC_EDGAR_10K/amazon_metrics.csv'), 'w', newline='', encoding='cp1252') as f:
     writer = csv.writer(f)
@@ -96,24 +99,5 @@ with open(Path('/Users/evelyngordi/Downloads/SEC_EDGAR_10K/nvidia_metrics.csv'),
 with open(Path('/Users/evelyngordi/Downloads/SEC_EDGAR_10K/microsoft_metrics.csv'), 'w', newline='', encoding='cp1252') as f:
     writer = csv.writer(f)
     writer.writerows([headers_in_table]+ microsoft_metrics )
-
-
-
-
-    
-
-
-
-    
-    
-
-
-        
-            
-    
-
-
-
-    
 
 

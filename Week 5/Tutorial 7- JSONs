@@ -1,0 +1,29 @@
+from pathlib import Path
+import json
+
+#when records are stored in JSONs, each record is typically represented as a dictionary
+
+json_path = Path('/Users/evelyngordi/Downloads/Example_JSON_Simple.json')
+
+with open(json_path) as f:
+    data = json.load(f)
+
+
+#print(data[0]['id'])          #indexing by [0] gives us the first element of our parent list (in our outermost bracket). we're indexing by "id" and it will return the value pair in the dictionary
+#print(data[0]['location'])
+#print(data[0]['stewardOrgNames'])
+#print(data[0]['stewardOrgNames'][0]) #can index super far in to the list
+
+
+#converting a JSON into a table with list comprehension
+
+data_headers = ['counties', 'states', 'name', 'systemType'] #the columns in our output table exactly match the keys in each record dict
+data_table = [] #setting up empty table that becomes the final table we want
+for record in data: #loops over each recpod (each dictionary in the json)
+
+    data_values = [record[header] for header in data_headers] #loop through each recprd and look for the strings in data_headers
+    data_table.append(data_values)
+
+print(data_headers)
+for row in data_table:
+    print(row)

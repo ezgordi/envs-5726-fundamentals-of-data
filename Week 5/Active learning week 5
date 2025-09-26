@@ -1,0 +1,102 @@
+from pathlib import Path
+import json
+import csv
+import statistics
+
+json_path = ('/Users/evelyngordi/Downloads/Trase_CIV_Cocoa_SupplyChain_Data.json')
+with open(json_path) as f:
+    data = json.load(f)
+
+records_cote = data['cote_divoire_cocoa_v1_1_1']['data'] #all the data we want is nestled here
+
+data_headers = ('trader_group', 'country_of_destination', 'cocoa_deforestation_15_years_total_exposure','cocoa_net_emissions_15_years_total' )
+data_table = []
+
+for record in records_cote: #iterates over each record in records_cote
+     data_values = [
+        record["supply_chain_data"]["trader_group"], #look within these 
+        record["supply_chain_data"]["country_of_destination"],
+        record["cocoa_data"]["cocoa_deforestation_15_years_total_exposure"],
+        record["cocoa_data"]["cocoa_net_emissions_15_years_total"]
+    ]
+     data_table.append(data_values)
+
+with open (Path('/Users/evelyngordi/Downloads/Week 5 AL Data.csv'), 'w', newline='', encoding='cp1252') as f: #creating csv
+    writer = csv.writer(f)
+    writer.writerows([data_headers]+data_table)
+
+
+    #task two and three
+country_by_cocoa_deforestation = {} #creating new dictionary
+
+for row in data_table: #creating list of country: values
+    trader_group, country_of_destination, cocoa_deforestation_15_years_total_exposure, cocoa_net_emissions_15_years_total = row
+
+    if country_of_destination not in country_by_cocoa_deforestation:
+            country_by_cocoa_deforestation[country_of_destination] = [float(cocoa_deforestation_15_years_total_exposure)]
+
+    else: country_by_cocoa_deforestation[country_of_destination].append(float(cocoa_deforestation_15_years_total_exposure))
+
+
+country_by_sum_deforestation = [] #new list w/ sums of all deforestation values
+for country in country_by_cocoa_deforestation:  #Python automatically loops over the keys in the dictionary
+     
+     deforestation_values_list = country_by_cocoa_deforestation[country] 
+     sum_deforestation = sum(deforestation_values_list)
+     country_by_sum_deforestation.append([country,sum_deforestation])
+
+
+deforestation_filtered = [] #filtering by at least 10% of max
+sum_deforestation_max = max(country[1] for country in country_by_sum_deforestation)
+for country in country_by_sum_deforestation:
+     if country[1] > 0.1* sum_deforestation_max:
+          deforestation_filtered.append(country)
+
+
+country_by_net_emissions = {}
+
+for row in data_table:
+      trader_group, country_of_destination, cocoa_deforestation_15_years_total_exposure, cocoa_net_emissions_15_years_total = row
+      
+      if country_of_destination not in country_by_net_emissions:
+        country_by_net_emissions[country_of_destination] = [float(cocoa_net_emissions_15_years_total)]
+
+      else: country_by_net_emissions[country_of_destination].append(float(cocoa_net_emissions_15_years_total))
+
+country_by_sum_emissions = []
+for country in country_by_net_emissions: #Python automatically loops over the keys in the dictionary
+     emissions_list = country_by_net_emissions[country] #Go into the dictionary, look up the key that’s currently stored in country, and grab the corresponding list of values.
+     sum_emissions = sum(emissions_list)
+     country_by_sum_emissions.append([country,sum_emissions])
+
+emissions_filtered = []
+
+sum_emissions_max = max(country[1] for country in country_by_sum_emissions)
+for country in country_by_sum_emissions:
+     if country[1] > 0.1* sum_emissions_max:
+          emissions_filtered.append(country)
+
+
+
+with open('Country_by_cocoa_deforestation.json', 'w') as json_output_1:
+     json.dump(country_by_cocoa_deforestation, json_output_1, indent=4, sort_keys=True)
+
+with open('Country_by_net_emissions.json', 'w') as json_output_2:
+     json.dump(country_by_net_emissions, json_output_2, indent=4, sort_keys=True)
+
+#task 3
+emissions_filtered_headers = ['Country_of_destination', 'total_cocoa_emissions']
+deforestation_filtered_headers = ['Country_of_destination', 'total_cocoa_emissions']
+
+with open(Path('/Users/evelyngordi/Downloads/Country_by_filtered_deforestation.csv'), 'w', newline='', encoding='cp1252') as f:
+    writer = csv.writer(f)
+    writer.writerows([deforestation_filtered_headers]+ deforestation_filtered )
+
+with open(Path('/Users/evelyngordi/Downloads/Country_by_filtered_emissions.csv'), 'w', newline='', encoding='cp1252') as f:
+    writer = csv.writer(f)
+    writer.writerows([emissions_filtered_headers]+ emissions_filtered )
+
+     
+
+
+
