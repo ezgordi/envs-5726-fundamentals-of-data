@@ -1,0 +1,45 @@
+target_headers=['TRACT', 'POPULATION']
+target_table = [
+    [30101, 2646],
+    [30103, 2375],
+    [30104, 3424],
+    [30200, 5346],
+    [30300, 4428],
+    [30400, 5543],
+]
+
+join_headers = ['TRACT', 'RISK_SCORE', 'RISK_RATING']
+join_table = [
+    [30101, 17.5, 'Very Low'],
+    [30103, 5.1, 'Very Low'],
+    [30104, 28.1, 'Relatively Low'],
+    [30200, 54.4, 'Relatively Low'],
+    [30700, 59.7, 'Relatively Low'],
+    [30801, 22.6, 'Very Low'],
+
+]
+
+unique_id_name = 'TRACT' #every Join requred a common unique ID that is shared btwn Target and Join tables
+
+target_id_set = set([row[target_headers.index(unique_id_name)] for row in target_table]) #set does not have duplicates
+join_id_set = set([row[join_headers.index(unique_id_name)] for row in join_table])
+
+#print(target_id_set)
+#print(join_id_set)
+
+#print(target_id_set.intersection(join_id_set)) #identify the unique IDs that are shared btwn the two sets to use in inner join
+
+#first goal is to create a Join dictionary from the Join table. this dicstionary will contain all the rows from the Join table where the key is the unique ID and the value is the entire row
+
+join_dict = {}
+for row in join_table:
+
+    unique_id = row[join_headers.index(unique_id_name)] #get the unique_id by indexing our Join table for each value in the TRACT column
+
+    join_dict[unique_id] = row #populate the Join dict by creating key value pairds where unique id : row
+
+from pprint import pprint
+pprint(join_dict, width = 60) #shows us that now we have a dictionary where each unique ID key is paried with each row
+
+#inner join
+joined_headers = target_headers + join_headers
