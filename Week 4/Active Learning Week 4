@@ -1,0 +1,103 @@
+from pathlib import Path
+import csv
+import os
+from datetime import datetime
+import statistics
+import itertools
+
+my_folder = Path('/Users/evelyngordi/Downloads/SEC_EDGAR_10K')
+headers_in_table = ['company name', 'year', 'Count Sustainability', 'Count AI']
+table = []
+
+for my_file in my_folder.glob('*.htm*'): #allows us to iterate every file inside of a folder #-a shows you hidden files
+
+    name_split = my_file.name.split('-')[0]
+    
+    replace_company_name = name_split.replace('amzn', 'amazon').replace('msft', 'microsoft').replace('goog' , 'google').replace('nvda', 'nvidia')
+    #replaced shorthands for full name, removed everything else
+    
+    date_string = my_file.name.split('-')[1].split('.')[0].split('_')[-1] #pulling the date only
+    my_dates = datetime.strptime(date_string, '%Y%m%d') #converted date from string into date time
+    year = my_dates.year
+
+    with open(my_file, 'r', encoding = 'cp1252') as file:
+        content= file.read()
+        sustainability_counter = content.lower().count('sustainability') #opens each file and counts # of instances 'sustainablity'
+        ai_counter = content.lower().count('artificial intelligence')
+
+
+    table.append([replace_company_name, year, sustainability_counter, ai_counter]) #appending row
+
+print(headers_in_table)
+for row in sorted(table)[:50]:
+   print(row)
+    
+
+#task two
+
+def get_average_by_company ( headers, table, column_name_to_average, company_name ): #defined a function w/ 4 inputs
+
+    find_company_column = headers.index('company name') #index to identify the column that has our company names, [0]
+
+    find_target_column = headers.index(column_name_to_average)
+    
+    values_to_average_for_each_company = []
+
+    for row in table: 
+    
+        if row[find_company_column] == company_name:
+            values_to_average_for_each_company.append(float(row[find_target_column]))
+
+    return statistics.mean(values_to_average_for_each_company)
+
+
+for company_name in ['nvidia', 'microsoft', 'google', 'amazon']: #for loop that has the list of the company names
+    for column_name_to_average in ['Count Sustainability' , 'Count AI',]: #where we defined the specific column name that we want to average
+        column_average = get_average_by_company(headers=headers_in_table, #running our function and define our inputs above
+                                                table = table,
+                                                column_name_to_average= column_name_to_average,
+                                                company_name=company_name)
+            
+        print( f' The average {column_name_to_average} for {company_name} is {column_average}') #
+
+
+#task 3
+
+
+amazon_metrics = []
+google_metrics = []
+nvidia_metrics = []
+microsoft_metrics = []
+
+for row in table:
+    if row[headers_in_table.index('company name')] == 'amazon':
+        amazon_metrics.append(row)
+    elif row[headers_in_table.index('company name')] == 'google':
+        google_metrics.append(row)
+    elif row[headers_in_table.index('company name')] == 'nvidia':
+        nvidia_metrics.append(row)
+    elif row[headers_in_table.index('company name')] == 'microsoft':
+        microsoft_metrics.append(row)
+
+print (amazon_metrics)
+#print (google_metrics)
+#print (nvidia_metrics)
+#print (microsoft_metrics)
+
+with open(Path('/Users/evelyngordi/Downloads/SEC_EDGAR_10K/amazon_metrics.csv'), 'w', newline='', encoding='cp1252') as f:
+    writer = csv.writer(f)
+    writer.writerows([headers_in_table]+ amazon_metrics )
+
+with open(Path('/Users/evelyngordi/Downloads/SEC_EDGAR_10K/google_metrics.csv'), 'w', newline='', encoding='cp1252') as f:
+    writer = csv.writer(f)
+    writer.writerows([headers_in_table]+ google_metrics )
+
+with open(Path('/Users/evelyngordi/Downloads/SEC_EDGAR_10K/nvidia_metrics.csv'), 'w', newline='', encoding='cp1252') as f:
+    writer = csv.writer(f)
+    writer.writerows([headers_in_table]+ nvidia_metrics )
+
+with open(Path('/Users/evelyngordi/Downloads/SEC_EDGAR_10K/microsoft_metrics.csv'), 'w', newline='', encoding='cp1252') as f:
+    writer = csv.writer(f)
+    writer.writerows([headers_in_table]+ microsoft_metrics )
+
+

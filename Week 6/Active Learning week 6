@@ -1,0 +1,80 @@
+from pathlib import Path
+import csv
+
+#task 1
+
+#target table
+social_vulnerability_file_path = Path('/Users/evelyngordi/Downloads/EJScreen_BlockGroup_SocialVulnerability.csv')
+social_vulnerability_table = []
+
+with open (social_vulnerability_file_path, 'r', encoding='cp1252') as social_vulnerability_file:
+    sv_rows = csv.reader(social_vulnerability_file)
+
+    social_vulnerability_headers = next(sv_rows)
+
+    for row in sv_rows:
+        social_vulnerability_table.append(row)
+
+# to be joined table
+hazards_file_path = Path('/Users/evelyngordi/Downloads/EJSCREEN_BlockGroup_Hazards (1).csv')
+hazards_table = []
+
+with open (hazards_file_path, 'r', encoding='cp1252') as hazards_file:
+    hazards_rows = csv.reader(hazards_file)
+
+    hazards_headers = next(hazards_rows)
+
+    for row in hazards_rows:
+        hazards_table.append(row)
+   
+
+unique_id_name_sv = 'ID_SOCVUL'
+unique_id_name_hazards = 'ID_HAZ'
+
+hazards_dict = {}
+
+for row in hazards_table:
+    unique_id_hazards = row[hazards_headers.index(unique_id_name_hazards)] 
+    hazards_dict[unique_id_hazards] = row #creating the key beig the ID of hazards : value pair being the row
+
+#left outer join 
+
+outer_joined_headers = social_vulnerability_headers + hazards_headers
+outer_joined_table = []
+
+for sv_row in social_vulnerability_table:
+    unique_id_sv = sv_row[social_vulnerability_headers.index(unique_id_name_sv)]
+
+    if unique_id_sv in hazards_dict:
+       hazards_row = hazards_dict[unique_id_sv]
+
+    else:
+        hazards_row = [None]* len(hazards_headers)
+
+    outer_joined_table.append(sv_row+hazards_row)
+
+for row in outer_joined_table:
+    print(row)
+
+#iterate every row in the hazards dict and if the hazards unique ID is not in the sv table, append it to the 
+sv_id_set = set([row[social_vulnerability_headers.index(unique_id_name_sv)] for row in social_vulnerability_table])
+
+for unique_id_name_hazards in hazards_dict:
+
+    if unique_id_hazards not in sv_id_set:
+
+        hazards_row = hazards_dict[unique_id_hazards]
+        
+        sv_row = [None] * len(social_vulnerability_headers)
+        outer_joined_table.append(sv_row + hazards_row)
+
+print (outer_joined_headers)
+for row in outer_joined_table:
+    print (row)
+
+
+with open(Path('/Users/evelyngordi/Downloads/Outer_Joined_Table.csv'), 'w', newline='', encoding='cp1252') as f:
+    writer = csv.writer(f)
+    writer.writerows([outer_joined_headers]+ outer_joined_table)
+
+
