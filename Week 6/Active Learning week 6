@@ -35,7 +35,7 @@ hazards_dict = {}
 
 for row in hazards_table:
     unique_id_hazards = row[hazards_headers.index(unique_id_name_hazards)] 
-    hazards_dict[unique_id_hazards] = row #creating the key beig the ID of hazards : value pair being the row
+    hazards_dict[unique_id_hazards] = row #creating the key being the ID of hazards : value pair being the row
 
 #left outer join 
 
@@ -46,7 +46,7 @@ for sv_row in social_vulnerability_table:
     unique_id_sv = sv_row[social_vulnerability_headers.index(unique_id_name_sv)]
 
     if unique_id_sv in hazards_dict:
-       hazards_row = hazards_dict[unique_id_sv]
+       hazards_row = hazards_dict[unique_id_sv] #if it does, then add it to the hazards row
 
     else:
         hazards_row = [None]* len(hazards_headers)
@@ -56,16 +56,27 @@ for sv_row in social_vulnerability_table:
 #for row in outer_joined_table:
     #print(row)
 
-sv_id_set = set([row[social_vulnerability_headers.index(unique_id_name_sv)] for row in social_vulnerability_table])
+sv_id_set = set([row[social_vulnerability_headers.index(unique_id_name_sv)] for row in social_vulnerability_table]) #going thru sv table, row by row
 
 for unique_id_haz in hazards_dict: #iterate every row in the hazards dict and if the hazards unique ID is not in the sv table, append it to the outer joined table
 
-    if unique_id_haz not in sv_id_set:
+    if unique_id_haz not in sv_id_set: #if the hazards id isnt in the social vulnerability set
 
-        hazards_row = hazards_dict[unique_id_haz]
+        hazards_row = hazards_dict[unique_id_haz]  #make it equal to that hazards row
         
         sv_row = [None] * len(social_vulnerability_headers)
         outer_joined_table.append(sv_row + hazards_row)
+
+
+#print (outer_joined_headers)
+#for row in outer_joined_table:
+    #print (row)
+
+
+#with open(Path('/Users/evelyngordi/Downloads/Outer_Joined_Table.csv'), 'w', newline='', encoding='cp1252') as f:
+    #writer = csv.writer(f)
+    #writer.writerows([outer_joined_headers]+ outer_joined_table)
+
 
 #task 2
 valid_ID_socvul_table = []
@@ -76,7 +87,7 @@ id_socvul_valid = outer_joined_headers.index('ID_SOCVUL')
 id_haz_valid = outer_joined_headers.index('ID_HAZ')
 
 for row in outer_joined_table:
-    if row[id_socvul_valid]!= '' and row[id_socvul_valid]!= None:
+    if row[id_socvul_valid]!= '' and row[id_socvul_valid]!= None: #if row[id_socvul_valid] 
         valid_ID_socvul_table.append(row)
     
     if row[id_haz_valid]!= '' and row[id_haz_valid]!= None:
@@ -94,14 +105,23 @@ sv_id_set = set([row[social_vulnerability_headers.index(unique_id_name_sv)] for 
 haz_id_set = set([row[hazards_headers.index(unique_id_name_hazards)] for row in hazards_table])
 print(f' There are {len(sv_id_set.intersection(haz_id_set))} inner joined rows out of {len(total_valid_table)} total Block Groups')
 
+#task 4
+#creating a new filtered table to store only the inner join rows (that we identified ^^^)
+inner_joined_table = []
+id_socvul_index = outer_joined_headers.index('ID_SOCVUL')
+id_haz_index = outer_joined_headers.index('ID_HAZ')
 
-#print (outer_joined_headers)
-#for row in outer_joined_table:
-    #print (row)
+for row in outer_joined_table:
+    soc_id = row[id_socvul_index]
+    haz_id = row[id_haz_index]
 
+    if soc_id not in (None, '') and haz_id not in (None, ''):
+        inner_joined_table.append(row)
 
-#with open(Path('/Users/evelyngordi/Downloads/Outer_Joined_Table.csv'), 'w', newline='', encoding='cp1252') as f:
-    #writer = csv.writer(f)
-    #writer.writerows([outer_joined_headers]+ outer_joined_table)
+    
+with open(Path('/Users/evelyngordi/Downloads/Inner_Joined_Table_final1.csv'), 'w', newline='', encoding='cp1252') as f:
+    writer = csv.writer(f)
+    writer.writerows([outer_joined_headers]+ inner_joined_table)
+
 
 
