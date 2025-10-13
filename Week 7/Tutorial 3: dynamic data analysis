@@ -1,0 +1,72 @@
+from pprint import pprint
+import requests
+
+
+nld_systems_url = 'https://levees.sec.usace.army.mil:443/api-local/systems/query?as=system&in=%40state%3Alouisiana&md=false'
+nld_systems = requests.get(url = nld_systems_url).json()
+
+#print(f'There are {len(nld_systems)} levee systems in Louisiana ')
+
+#pprint(nld_systems[:5], width = 60)
+
+
+
+nld_systems_headers = ['ID', 'Location', 'Accreditation Rating', 'Primary Purpose']
+nld_systems_table = []
+
+for nld_system in nld_systems:
+    system_id = nld_system['id']
+    location = nld_system['location']
+    rating = nld_system['femaAccreditationRating']
+    purpose = nld_system['primaryPurpose']
+
+    nld_systems_table.append([system_id, location, rating, purpose])
+
+#print(nld_systems_headers)
+#for row in nld_systems_table:
+    #print(row [:5])
+
+system_id = '4405000554' #we want to query the NLD for every/any levee system
+nld_risk_screenings_url = f'https://levees.sec.usace.army.mil:443/api-local/system/{system_id}/screenings'
+screenings = requests.get(url= nld_risk_screenings_url).json()
+
+#pprint(screenings, width= 60)
+
+#now, we want to request the list of all levee systems from louisiana
+#for every levee system in the list, request the risk screening for the levee system
+
+nld_screenings_headers = ['ID',
+                          'Location',
+                          'Financial Risk',
+                          'People at Risk',
+                          'Structures at Risk'
+                          ]
+nld_screenings_table = []
+
+for nld_system in nld_systems: #for every levee system in the list of levee dictionaries we requested earlier, make another request to get the risk screenings
+    system_id = nld_system['id']
+    location = nld_system['location']
+
+    nld_risk_screenings_url =  f'https://levees.sec.usace.army.mil:443/api-local/system/{system_id}/screenings'
+    screenings = requests.get(url = nld_risk_screenings_url).json()
+
+    if screenings: #will automatically return this, b/c screenings DOES exist
+        #print(f'{system_id} has the following screenings:')
+        for screening in screenings: #if the levee system has screenings, get specific attributes from each screening dictionary
+            #print(f'\t{str(screening)}')
+            financial_risk = screening['financialRisk']
+            people_at_risk = screening['peopleAtRisk']
+            structures_at_risk = screening['structuresAtRisk']
+            nld_screenings_table.append([system_id,
+                                         location,
+                                         financial_risk,
+                                         people_at_risk,
+                                         structures_at_risk])
+            
+    else:
+       #print(f'{system_id} has no screenings') #if the levee system has NO screenings, fill in those missing attributes w/ None
+        nld_screenings_table.append([system_id, location, None, None, None])
+
+print(nld_screenings_headers)
+for row in nld_screenings_table:
+    print(row)
