@@ -1,0 +1,60 @@
+import urllib
+from pathlib import Path
+import requests
+from pprint import pprint
+import csv
+
+fema_hazards_zones_url = 'https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28/query'
+
+petroleum_refineries_file = Path('/Users/evelyngordi/Downloads/USEIA_Petroleum_Refineries_By_Nearest_Major_City.csv')
+
+table = []
+with open (petroleum_refineries_file, 'r', encoding='cp1252') as petroleum_refineries_file:
+    reader = csv.reader(petroleum_refineries_file)
+    headers = next(reader)
+    table.append(headers + ['FEMA_Hazard_Zone']) #new column to put the flood risk data
+
+    for row in reader: #go through each row in the csv file
+        latitude = row[headers.index('Latitude')] #setting variable equal to info in latitude column row
+        longitude = row[headers.index('Longitude')]
+
+       
+        
+
+
+        query = {
+            'geometry': f'{{"x": {longitude}, "y": {latitude}}}',
+            'inSR':'4326',
+            'geometryType': 'esriGeometryPoint',
+            'spatialRel': 'esriSpatialRelIntersects',
+            'outFields': 'ZONE_SUBTY',
+            'returnGeometry': 'false',
+            'f': 'pjson'
+
+            }
+
+        encoded_query =urllib.parse.urlencode(query)
+        full_url = fema_hazards_zones_url + '?' + encoded_query
+        fema_hazards_zone_data = requests.get( url = full_url).json()
+
+
+        if len(fema_hazards_zone_data['features']) > 0:
+            flood_hazard = fema_hazards_zone_data['features'][0]['attributes']['ZONE_SUBTY']
+                    
+            if flood_hazard is None:
+                    flood_hazard = 'No Data'
+                
+        else: flood_hazard = 'No Data'
+        
+
+        new_row = row + [flood_hazard]
+        table.append(new_row)
+    
+output_file = Path('/Users/evelyngordi/Downloads/Week7Task1.csv')
+with open(output_file, 'w', newline='', encoding='cp1252') as f:
+    writer = csv.writer(f)
+    writer.writerows(table)
+
+print(output_file)
+
+
