@@ -1,0 +1,11 @@
+import urllib
+from pathlib import Path
+import requests
+from pprint import pprint
+import csv
+
+map_url = 'https://routing.openstreetmap.de/routed-bike/route/v1/driving/-75.160217,39.940278;-74.005939,40.712739?overview=false&alternatives=true&steps=true'
+response = requests.get(url = map_url)
+result = response.json()
+
+pprint(result, width = 40)
