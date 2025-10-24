@@ -3,6 +3,7 @@ from pathlib import Path
 import requests
 from pprint import pprint
 import csv
+import time
 
 fema_hazards_zones_url = 'https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28/query'
 
@@ -12,14 +13,11 @@ table = []
 with open (petroleum_refineries_file, 'r', encoding='cp1252') as petroleum_refineries_file:
     reader = csv.reader(petroleum_refineries_file)
     headers = next(reader)
-    table.append(headers + ['FEMA_Hazard_Zone']) #new column to put the flood risk data
+    table.append(headers + ['FEMA_Hazard_Zone']) #new column to put flood risk data
 
     for row in reader: #go through each row in the csv file
         latitude = row[headers.index('Latitude')] #setting variable equal to info in latitude column row
         longitude = row[headers.index('Longitude')]
-
-       
-        
 
 
         query = {
@@ -31,15 +29,15 @@ with open (petroleum_refineries_file, 'r', encoding='cp1252') as petroleum_refin
             'returnGeometry': 'false',
             'f': 'pjson'
 
-            }
+            } #using this dictionary to get info
 
         encoded_query =urllib.parse.urlencode(query)
-        full_url = fema_hazards_zones_url + '?' + encoded_query
-        fema_hazards_zone_data = requests.get( url = full_url).json()
+        full_url = fema_hazards_zones_url + '?' + encoded_query #full url
+        fema_hazards_zone_data = requests.get( url = full_url).json() #make request for info from arc GIS
 
 
         if len(fema_hazards_zone_data['features']) > 0:
-            flood_hazard = fema_hazards_zone_data['features'][0]['attributes']['ZONE_SUBTY']
+            flood_hazard = fema_hazards_zone_data['features'][0]['attributes']['ZONE_SUBTY'] #index into 
                     
             if flood_hazard is None:
                     flood_hazard = 'No Data'
@@ -49,12 +47,46 @@ with open (petroleum_refineries_file, 'r', encoding='cp1252') as petroleum_refin
 
         new_row = row + [flood_hazard]
         table.append(new_row)
-    
+"""   
 output_file = Path('/Users/evelyngordi/Downloads/Week7Task1.csv')
 with open(output_file, 'w', newline='', encoding='cp1252') as f:
     writer = csv.writer(f)
     writer.writerows(table)
 
 print(output_file)
+"""
+
+#task 4
+
+osrm_url = 'https://routing.openstreetmap.de/routed-car/route/v1/driving/' #stop at driving
+
+table[0].append('Drive_Duration_Seconds') #add that new column name as a header 
+
+durations_table = [table[0]] #make new table
 
 
+for row in table[1:]: #minus header
+    latitude = row[headers.index('Latitude')]
+    longitude = row[headers.index('Longitude')]
+    city_lat = row[headers.index('NearestMajorCity_Latitude')]
+    city_lon = row[headers.index('NearestMajorCity_Longitude')]
+
+    osrm_request_url = f'{osrm_url}{longitude},{latitude};{city_lon},{city_lat}?steps=false' #define info i want
+    osrm_response = requests.get(url=osrm_request_url).json()
+    time.sleep(0.5) # half-second pause after each request to prevent ConnectionResetError
+
+    if osrm_response.get('routes') and len(osrm_response['routes']) > 0:
+        drive_duration = osrm_response['routes'][0]['duration'] #access value associated with key routes and take first element (so take first route) and inside that find duration
+
+        if drive_duration is None:
+             drive_duration = 'No Data'
+    else:
+         drive_duration = 'No Data'
+    
+    duration_row = row + [drive_duration]
+    durations_table.append(duration_row)
+
+output_file = Path('/Users/evelyngordi/Downloads/task4week7.csv')
+with open(output_file, 'w', newline="", encoding='cp1252') as f:
+    writer = csv.writer(f)
+    writer.writerows(durations_table)
