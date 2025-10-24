@@ -1,0 +1,49 @@
+from collections import namedtuple
+from pathlib import Path
+import csv
+from pprint import pprint
+from typing import List
+import pandas as pd
+import sys
+
+
+wash_file_path = Path('/Users/evelyngordi/Downloads/IOM_Rohingya_WASH_Survey.csv')
+
+
+with open(wash_file_path, 'r', encoding='cp1252') as wash_file_path:
+    reader = csv.reader(wash_file_path)
+    headers = next(reader)
+
+    WashSurvey = namedtuple(typename= 'WashSurvey', field_names= headers)
+    
+    wash_survey_table: List[WashSurvey] = []
+
+    for row in reader:
+        wash_survey = WashSurvey(*row)
+        wash_survey_table.append(wash_survey)
+
+#for row in wash_survey_table[:2]:
+    #print(row)
+
+import_to_panda = pd.DataFrame.from_records(
+    data = wash_survey_table,
+    columns= WashSurvey._fields
+)
+
+filtered_for_g_df = import_to_panda.filter(regex='^G')
+
+filtered_g_table = list(filtered_for_g_df.itertuples(name= 'WashSurvey', index= False))
+#print(filtered_g_table[0])
+
+
+sys.path.append('/Users/evelyngordi/Desktop/test/envs-5726-fundamentals-of-data/Week 8')
+
+from datalib import convert_yesno_to_binary
+from datalib import convert_string_to_number
+
+g_and_binary_table = convert_yesno_to_binary(filtered_g_table)
+
+#print(g_and_binary_table[0])
+
+new_table = convert_string_to_number(g_and_binary_table)
+print(new_table[1])
