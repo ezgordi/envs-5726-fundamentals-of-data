@@ -5,20 +5,21 @@ from pprint import pprint
 from typing import List
 import pandas as pd
 import sys
+import numpy as np
 
 
 wash_file_path = Path('/Users/evelyngordi/Downloads/IOM_Rohingya_WASH_Survey.csv')
 
 
-with open(wash_file_path, 'r', encoding='cp1252') as wash_file_path:
+with open(wash_file_path, 'r', encoding='cp1252') as wash_file_path: #open file, first row = headers
     reader = csv.reader(wash_file_path)
     headers = next(reader)
 
-    WashSurvey = namedtuple(typename= 'WashSurvey', field_names= headers)
+    WashSurvey = namedtuple(typename= 'WashSurvey', field_names= headers) #create namedtuple. column names become field
     
     wash_survey_table: List[WashSurvey] = []
 
-    for row in reader:
+    for row in reader: #Loops through each remaining line in the CSV, converts it into a WashSurvey tuple (one per respondent), and appends it to the list.
         wash_survey = WashSurvey(*row)
         wash_survey_table.append(wash_survey)
 
@@ -28,22 +29,138 @@ with open(wash_file_path, 'r', encoding='cp1252') as wash_file_path:
 import_to_panda = pd.DataFrame.from_records(
     data = wash_survey_table,
     columns= WashSurvey._fields
-)
+) #Converts the list of namedtuples into a Pandas DataFrame,
 
-filtered_for_g_df = import_to_panda.filter(regex='^G')
+filtered_for_g_df = import_to_panda.filter(regex='^G') #keep only columns start with “G”
 
 filtered_g_table = list(filtered_for_g_df.itertuples(name= 'WashSurvey', index= False))
+#Converts that filtered DataFrame back into a list of tuples (rows) 
 #print(filtered_g_table[0])
 
 
-sys.path.append('/Users/evelyngordi/Desktop/test/envs-5726-fundamentals-of-data/Week 8')
+sys.path.append('/Users/evelyngordi/Desktop/test/envs-5726-fundamentals-of-data/Week 8') #able to identify data lib when we pull in
 
-from datalib import convert_yesno_to_binary
-from datalib import convert_string_to_number
+from datalib import convert_yesno_to_binary #convert yes and no to 1 and 0
+from datalib import convert_string_to_numeric #convert strings to numbers
 
 g_and_binary_table = convert_yesno_to_binary(filtered_g_table)
 
 #print(g_and_binary_table[0])
 
-new_table = convert_string_to_number(g_and_binary_table)
+new_table = convert_string_to_numeric(g_and_binary_table)
+print('---------- The cleaned G table-------------')
 print(new_table[1])
+
+
+#task 4 
+# no Nans in our og data, but FA creats Nans if 0 variance or perfectly linear (correlated)
+# can't have perfectly correlated values
+# https://stackoverflow.com/questions/56722430/factor-analysis-using-python-factor-analyzer
+
+#task 5: no NaNs, no highly correlated variables. prepares the dataset for statistical analysis.
+
+tuple_to_panda = pd.DataFrame.from_records(
+    data = new_table,
+    columns = filtered_for_g_df.columns
+)
+
+# Make sure all columns are numeric (convert errors to NaN)
+tuple_to_panda = tuple_to_panda.apply(pd.to_numeric, errors='coerce')
+
+# Compute correlation matrix w/ NaN
+corr_matrix = tuple_to_panda.corr(numeric_only=True)
+print ('-----------Correlation matrix with NaN values present--------------')
+print(corr_matrix)
+
+# Define findCorrelation() function
+def findCorrelation(corr, cutoff=0.9, exact=None):
+    def _findCorrelation_fast(corr, avg, cutoff):
+        combsAboveCutoff = corr.where(lambda x: (np.tril(x)==0) & (x > cutoff)).stack().index
+        rowsToCheck = combsAboveCutoff.get_level_values(0)
+        colsToCheck = combsAboveCutoff.get_level_values(1)
+        msk = avg[colsToCheck] > avg[rowsToCheck].values
+        deletecol = pd.unique(np.r_[colsToCheck[msk], rowsToCheck[~msk]]).tolist()
+        return deletecol
+
+    def _findCorrelation_exact(corr, avg, cutoff):
+        x = corr.loc[(*[avg.sort_values(ascending=False).index]*2,)]
+        if (x.dtypes.values[:, None] == ['int64', 'int32', 'int16', 'int8']).any():
+            x = x.astype(float)
+        x.values[(*[np.arange(len(x))]*2,)] = np.nan
+        deletecol = []
+        for ix, i in enumerate(x.columns[:-1]):
+            for j in x.columns[ix+1:]:
+                if x.loc[i, j] > cutoff:
+                    if x[i].mean() > x[j].mean():
+                        deletecol.append(i)
+                        x.loc[i] = x[i] = np.nan
+                    else:
+                        deletecol.append(j)
+                        x.loc[j] = x[j] = np.nan
+        return deletecol
+
+     # --- make sure the matrix is symmetric enough to proceed ---
+    corr = corr.copy()
+    corr.index = corr.columns
+        
+    acorr = corr.abs()
+    avg = acorr.mean()
+
+    if exact or exact is None and corr.shape[1] < 100:
+        return _findCorrelation_exact(acorr, avg, cutoff)
+    else:
+       return _findCorrelation_fast(acorr, avg, cutoff)
+
+
+# --- Compute correlation matrix for the cleaned data ---
+corr_matrix = tuple_to_panda.corr(numeric_only=True)
+
+# Ensure the matrix is symmetric and labels match exactly
+corr_matrix.index = corr_matrix.columns
+corr_matrix = corr_matrix.loc[corr_matrix.columns, corr_matrix.columns]
+
+# Find columns to remove
+to_remove = findCorrelation(corr_matrix, cutoff=0.9, exact=False)
+
+print("Highly correlated columns to remove:", to_remove)
+
+# Replace those columns with NaN
+tuple_to_panda_nan = tuple_to_panda.copy()
+tuple_to_panda_nan[to_remove] = np.nan
+
+print("\nDataFrame after columns were removed:\n")
+print(tuple_to_panda_nan.head()) 
+
+df_final = tuple_to_panda_nan #new table w/ 
+
+(df_final)
+
+# TASK 6 run the factor analysis
+
+from factor_analyzer import FactorAnalyzer
+
+df_final = df_final.loc[:, df_final.std() > 0] # remove columns that are constant (zero variance)
+
+
+df_final = df_final.replace([np.inf, -np.inf], np.nan).dropna() # remove any rows with NaN or infinite values
+
+print("\nAfter final cleaning for Factor Analysis:")
+print(df_final.shape)
+print(df_final.head())
+
+fa = FactorAnalyzer(rotation="varimax")
+fa.fit(df_final)
+
+number_of_factors = 5
+fa = FactorAnalyzer(n_factors=number_of_factors, rotation="varimax")
+fa.fit(df_final)
+
+factor_names = [f'Factor{i+1}' for i in range(number_of_factors)]
+
+loadings_df = pd.DataFrame(fa.loadings_, columns=factor_names, index=[df_final.columns])
+
+index_names = ['Sum of Squared Loadings', 'Proportional Variance', 'Cumulative Variance']
+variance_df = pd.DataFrame(fa.get_factor_variance(), columns=factor_names, index=index_names)
+
+loadings_df.to_csv('/Users/evelyngordi/Downloads/Week8WASH_Loadings', index=True, float_format='%.3f')
+variance_df.to_csv('/Users/evelyngordi/Downloads/week8WASH_Variance', index=True, float_format='%.3f')
