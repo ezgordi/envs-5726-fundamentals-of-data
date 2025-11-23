@@ -1,0 +1,25 @@
+import pyodbc
+
+connection = pyodbc.connect(
+    "DRIVER={PostgreSQL Unicode};"
+    "SERVER=localhost;"
+    "PORT=5432;"
+    "DATABASE=week_10_database;"
+    "UID=postgres;"
+    "PWD=1GreenLotus!2345;"
+)
+
+cursor = connection.cursor()
+
+cursor.execute("SELECT * FROM trees_table LIMIT 10;")
+
+rows = cursor.fetchall()
+headers = [column[0] for column in cursor.description]
+
+print(headers)
+
+for row in rows:
+    print(row)
+
+cursor.close()
+connection.close()

@@ -6,7 +6,7 @@ def convert_yesno_to_binary (table : List[tuple]) -> List[tuple]:
     binary_table = [] 
 
     for row in table: #convert to a list to modify
-        binary_list = list(row)
+        binary_list = list(row) #can modify the values
         binary_row_list = [] #store the values from each single row
 
         for value in binary_list:
@@ -26,32 +26,28 @@ def convert_yesno_to_binary (table : List[tuple]) -> List[tuple]:
     return(binary_table)
 
 
-def convert_string_to_number(table : List[tuple]) -> List[tuple]:
-    stringclass = type(table[0])
+#  calculate the variance btwn column. give me all the unique values per column
+def convert_string_to_numeric(table: List[tuple]) -> List[tuple]:
+    named_tuple_class = type(table[0])
+    column_name_list = named_tuple_class._fields
 
-    string_to_value_dict = {} #dict to map each string sentence to it's numberic valye
-    next_num = 1
-    string_to_number_table = []
+    numeric_column_list = []
+    for column_name in column_name_list:
+        column_values = [getattr(row, column_name) #get data in rows of every column
+                         for row in table]
+        unique_non_numeric_column_values = set([column_value #find all non-numeric unique answers
+                                                for column_value in column_values
+                                                if not isinstance(column_value, (int, float, complex))])
 
-    for row in table:
-        values_list = list(row)
+        map_dict = {unique_value: index             #dict to hold the string value pair
+                    for (index, unique_value) in enumerate(unique_non_numeric_column_values)}
+        numeric_column_values = [map_dict[column_value] if column_value in map_dict else column_value #replace string w/ #'s
+                                 for column_value in column_values]
+        numeric_column_list.append(numeric_column_values)
 
-        for i, value in enumerate(values_list):
-            if isinstance(value, (int, float)) or value == '':
-                continue
-
-
-            value = value.strip()
-            if value not in string_to_value_dict:
-                string_to_value_dict[value] = next_num
-                next_num += 1
-
-            values_list[i] = string_to_value_dict[value]
-
-        string_to_number_table.append(stringclass(*values_list))
-
-    return string_to_number_table
-
+    numeric_row_table = [list(column) for column in zip(*numeric_column_list)] #columns --> rows
+    numeric_tuple_table = [named_tuple_class(*row) for row in numeric_row_table] #each row back to tuple washsurvey(G_1,...)
+    return numeric_tuple_table
 
 
 

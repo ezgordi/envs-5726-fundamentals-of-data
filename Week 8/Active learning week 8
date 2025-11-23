@@ -49,7 +49,7 @@ g_and_binary_table = convert_yesno_to_binary(filtered_g_table)
 
 new_table = convert_string_to_numeric(g_and_binary_table)
 print('---------- The cleaned G table-------------')
-print(new_table[1])
+print(new_table[0])
 
 
 #task 4 
@@ -131,15 +131,16 @@ tuple_to_panda_nan[to_remove] = np.nan
 print("\nDataFrame after columns were removed:\n")
 print(tuple_to_panda_nan.head()) 
 
-df_final = tuple_to_panda_nan #new table w/ 
+df_final = tuple_to_panda_nan #new table w/ NAns
 
 (df_final)
+
 
 # TASK 6 run the factor analysis
 
 from factor_analyzer import FactorAnalyzer
 
-df_final = df_final.loc[:, df_final.std() > 0] # remove columns that are constant (zero variance)
+df_final = df_final.loc[:, df_final.std() > 0] # remove columns that have SD of 0
 
 
 df_final = df_final.replace([np.inf, -np.inf], np.nan).dropna() # remove any rows with NaN or infinite values
@@ -162,5 +163,6 @@ loadings_df = pd.DataFrame(fa.loadings_, columns=factor_names, index=[df_final.c
 index_names = ['Sum of Squared Loadings', 'Proportional Variance', 'Cumulative Variance']
 variance_df = pd.DataFrame(fa.get_factor_variance(), columns=factor_names, index=index_names)
 
-loadings_df.to_csv('/Users/evelyngordi/Downloads/Week8WASH_Loadings', index=True, float_format='%.3f')
-variance_df.to_csv('/Users/evelyngordi/Downloads/week8WASH_Variance', index=True, float_format='%.3f')
+loadings_df.to_csv('/Users/evelyngordi/Downloads/Week8WASH_Loadings1', index=True, float_format='%.3f')
+variance_df.to_csv('/Users/evelyngordi/Downloads/week8WASH_Variance1', index=True, float_format='%.3f')
+
